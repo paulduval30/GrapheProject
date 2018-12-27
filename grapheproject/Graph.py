@@ -4,6 +4,50 @@ from numpy.random import random
 from math import *
 import tkinter as tk
 
+class Screen:
+    def __init__(self, algo):
+        self.algo = algo
+        self.screen = tk.Tk()
+        self.display = algo.result_glouton
+        self.frame = tk.Frame(self.screen)
+        self.show_screen()
+
+    def show_screen(self):
+        self.frame.forget()
+        self.frame = tk.Frame(self.screen)
+        canva = tk.Canvas(self.frame, width=1000, height=800, background='white')
+        for i in range(len(self.algo.grid)):
+            if self.display[0] != i:
+                canva.create_oval(floor(self.algo.grid[i][0] * 800) - 10, floor(self.algo.grid[i][1] * 800) - 10,floor(self.algo.grid[i][0] * 800) + 10,
+                              floor(self.algo.grid[i][1] * 800) + 10, fill="blue")
+            else:
+                canva.create_oval(floor(self.algo.grid[i][0] * 800) - 10, floor(self.algo.grid[i][1] * 800) - 10, floor(self.algo.grid[i][0] * 800) + 10,
+                                  floor(self.algo.grid[i][1] * 800) + 10, fill="red")
+
+        for i in range(1, len(self.display)):
+            canva.create_line(floor(self.algo.grid[self.display[i - 1]][0] * 800), floor(self.algo.grid[self.display[i - 1]][1] * 800),
+                              floor(self.algo.grid[self.display[i]][0] * 800), floor(self.algo.grid[self.display[i]][1] * 800), fill="red")
+
+        bouton_glouton = tk.Button(self.frame, text ="Glouton", command=self.algo.show_glouton)
+        bouton_prim = tk.Button(self.frame, text ="Prim", command=self.algo.show_prim)
+        bouton_decroise = tk.Button(self.frame, text ="Decroise", command=self.algo.show_decroise)
+
+        canva_stat = tk.Canvas(self.frame, width=1000, height=50, background='white')
+        canva_stat.create_text(100, 10, text="Moyenne glouton : " + str(self.algo.somme_glouton))
+        canva_stat.create_text(100, 25, text="Moyenne decroise : " + str(self.algo.somme_decroise))
+        canva_stat.create_text(100, 40, text="Moyenne prim : " + str(self.algo.somme_prim))
+        """canva_stat.create_text(self.somme_glouton)
+        canva_stat.create_text(self.somme_glouton)"""
+        bouton_decroise.pack(side=tk.LEFT)
+        bouton_prim.pack(side=tk.LEFT)
+        bouton_glouton.pack(side=tk.LEFT)
+        canva_stat.pack(side=tk.TOP)
+        canva.pack()
+
+        self.frame.pack()
+        self.frame.update()
+
+
 
 class Algo:
     # Constructeur de la classe
@@ -17,10 +61,7 @@ class Algo:
         self.result = self.pvcprim(0)
         self.result_glouton = self.glouton(0)
         self.result_decroise = self.cheminminimaldecroise()
-        self.screen = tk.Tk()
-        self.display = self.result_glouton
-        self.frame = tk.Frame(self.screen)
-        self.show_screen()
+        self.screen = Screen(self)
 
     def place_point(self, ligne):
         self.grid = [[0.0] * 2 for _ in range(ligne)]
@@ -39,41 +80,6 @@ class Algo:
     def get_dist(self, p1, p2):
         return sqrt((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)
 
-    def show_screen(self):
-        self.frame.forget()
-        self.frame = tk.Frame(self.screen)
-        canva = tk.Canvas(self.frame, width=1000, height=800, background='white')
-        for i in range(len(self.grid)):
-            if self.display[0] != i:
-                canva.create_oval(floor(self.grid[i][0] * 800) - 10, floor(self.grid[i][1] * 800) - 10,floor(self.grid[i][0] * 800) + 10,
-                              floor(self.grid[i][1] * 800) + 10, fill="blue")
-            else:
-                canva.create_oval(floor(self.grid[i][0] * 800) - 10, floor(self.grid[i][1] * 800) - 10, floor(self.grid[i][0] * 800) + 10,
-                                  floor(self.grid[i][1] * 800) + 10, fill="red")
-
-        for i in range(1, len(self.display)):
-            canva.create_line(floor(self.grid[self.display[i - 1]][0] * 800), floor(self.grid[self.display[i - 1]][1] * 800),
-                              floor(self.grid[self.display[i]][0] * 800), floor(self.grid[self.display[i]][1] * 800), fill="red")
-
-        bouton_glouton = tk.Button(self.frame, text ="Glouton", command=self.show_glouton)
-        bouton_prim = tk.Button(self.frame, text ="Prim", command=self.show_prim)
-        bouton_decroise = tk.Button(self.frame, text ="Decroise", command=self.show_decroise)
-
-        canva_stat = tk.Canvas(self.frame, width=1000, height=50, background='white')
-        canva_stat.create_text(100, 10, text="Moyenne glouton : " + str(self.somme_glouton))
-        canva_stat.create_text(100, 25, text="Moyenne decroise : " + str(self.somme_decroise))
-        canva_stat.create_text(100, 40, text="Moyenne prim : " + str(self.somme_prim))
-        """canva_stat.create_text(self.somme_glouton)
-        canva_stat.create_text(self.somme_glouton)"""
-        bouton_decroise.pack(side=tk.LEFT)
-        bouton_prim.pack(side=tk.LEFT)
-        bouton_glouton.pack(side=tk.LEFT)
-        canva_stat.pack(side=tk.TOP)
-        canva.pack()
-
-        self.frame.pack()
-        self.frame.update()
-
     # Méthode permetant de calculer la taille d'un chemin
     def somme_dist(self, chemin):
         somme = 0
@@ -83,21 +89,21 @@ class Algo:
 
     # Méthode pour afficher glouton
     def show_glouton(self):
-        self.display = self.result_glouton
-        self.show_screen()
-        self.screen.update()
+        self.screen.display = self.result_glouton
+        self.screen.show_screen()
+        self.screen.screen.update()
 
     # Méthode pour afficher Prim
     def show_prim(self):
-        self.display = self.result
-        self.show_screen()
-        self.screen.update()
+        self.screen.display = self.result
+        self.screen.show_screen()
+        self.screen.screen.update()
 
     # Méthode pour afficher chemin minimal decroise
     def show_decroise(self):
-        self.display = self.result_decroise
-        self.show_screen()
-        self.screen.update()
+        self.screen.display = self.result_decroise
+        self.screen.show_screen()
+        self.screen.screen.update()
 
     # Méthode permetant de générer le chemin avec Glouton
     def glouton (self, s):
@@ -234,13 +240,13 @@ for i in range(100):
     algo.somme_glouton += algo.somme_dist(algo.result_glouton)
     algo.somme_decroise += algo.somme_dist(algo.result_decroise)
     algo.somme_prim += algo.somme_dist(algo.result)
-    algo.show_screen()
+    algo.screen.show_screen()
 
 algo.somme_decroise = algo.somme_decroise / 100
 algo.somme_glouton = algo.somme_glouton / 100
 algo.somme_prim = algo.somme_prim / 100
 algo.show_glouton()
-algo.screen.mainloop()
+algo.screen.screen.mainloop()
 
 
 
