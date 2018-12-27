@@ -4,6 +4,26 @@ from numpy.random import random
 from math import *
 import tkinter as tk
 
+
+class Controleur:
+    def __init__(self):
+        self.algo = Algo(self)
+        self.screen = Screen(self.algo)
+
+    def update_screen(self):
+        self.screen.show_screen()
+        self.screen.screen.update()
+
+    def set_display(self, display):
+        self.screen.display = display
+
+    def run(self):
+        self.algo.init_calcul()
+        self.update_screen()
+        self.algo.show_non_tri()
+        self.screen.screen.mainloop()
+
+
 class Screen:
     def __init__(self, algo):
         self.algo = algo
@@ -16,21 +36,20 @@ class Screen:
         self.frame.forget()
         self.frame = tk.Frame(self.screen)
         canva = tk.Canvas(self.frame, width=1000, height=800, background='white')
-        for i in range(len(self.algo.grid)):
-            if self.display[0] != i:
-                canva.create_oval(floor(self.algo.grid[i][0] * 800) - 10, floor(self.algo.grid[i][1] * 800) - 10,floor(self.algo.grid[i][0] * 800) + 10,
-                              floor(self.algo.grid[i][1] * 800) + 10, fill="blue")
-            else:
-                canva.create_oval(floor(self.algo.grid[i][0] * 800) - 10, floor(self.algo.grid[i][1] * 800) - 10, floor(self.algo.grid[i][0] * 800) + 10,
-                                  floor(self.algo.grid[i][1] * 800) + 10, fill="red")
-
         for i in range(1, len(self.display)):
-            canva.create_line(floor(self.algo.grid[self.display[i - 1]][0] * 800), floor(self.algo.grid[self.display[i - 1]][1] * 800),
-                              floor(self.algo.grid[self.display[i]][0] * 800), floor(self.algo.grid[self.display[i]][1] * 800), fill="red")
+            canva.create_line(floor(self.algo.grid[self.display[i - 1]][0] * 800),
+                              floor(self.algo.grid[self.display[i - 1]][1] * 800),
+                              floor(self.algo.grid[self.display[i]][0] * 800),
+                              floor(self.algo.grid[self.display[i]][1] * 800), fill="red")
+        for i in range(len(self.algo.grid)):
+                canva.create_oval(floor(self.algo.grid[i][0] * 800) - 10, floor(self.algo.grid[i][1] * 800) - 10,
+                                  floor(self.algo.grid[i][0] * 800) + 10,
+                                  floor(self.algo.grid[i][1] * 800) + 10, fill="blue")
 
         bouton_glouton = tk.Button(self.frame, text ="Glouton", command=self.algo.show_glouton)
         bouton_prim = tk.Button(self.frame, text ="Prim", command=self.algo.show_prim)
         bouton_decroise = tk.Button(self.frame, text ="Decroise", command=self.algo.show_decroise)
+        bouton_non_tri = tk.Button(self.frame, text="Non parcouru", command=self.algo.show_non_tri)
 
         canva_stat = tk.Canvas(self.frame, width=1000, height=50, background='white')
         canva_stat.create_text(100, 10, text="Moyenne glouton : " + str(self.algo.somme_glouton))
@@ -41,6 +60,7 @@ class Screen:
         bouton_decroise.pack(side=tk.LEFT)
         bouton_prim.pack(side=tk.LEFT)
         bouton_glouton.pack(side=tk.LEFT)
+        bouton_non_tri.pack(side=tk.LEFT)
         canva_stat.pack(side=tk.TOP)
         canva.pack()
 
@@ -51,7 +71,7 @@ class Screen:
 
 class Algo:
     # Constructeur de la classe
-    def __init__(self):
+    def __init__(self, controleur):
         self.somme_glouton = 0
         self.somme_prim = 0
         self.somme_decroise = 0
@@ -61,7 +81,8 @@ class Algo:
         self.result = self.pvcprim(0)
         self.result_glouton = self.glouton(0)
         self.result_decroise = self.cheminminimaldecroise()
-        self.screen = Screen(self)
+        self.result_non_tri = self.non_tri()
+        self.controleur = controleur
 
     def place_point(self, ligne):
         self.grid = [[0.0] * 2 for _ in range(ligne)]
@@ -89,21 +110,23 @@ class Algo:
 
     # Méthode pour afficher glouton
     def show_glouton(self):
-        self.screen.display = self.result_glouton
-        self.screen.show_screen()
-        self.screen.screen.update()
+        self.controleur.set_display(self.result_glouton)
+        self.controleur.update_screen()
+
+    # Méthode pour afficher non tri
+    def show_non_tri(self):
+        self.controleur.set_display(self.result_non_tri)
+        self.controleur.update_screen()
 
     # Méthode pour afficher Prim
     def show_prim(self):
-        self.screen.display = self.result
-        self.screen.show_screen()
-        self.screen.screen.update()
+        self.controleur.set_display(self.result)
+        self.controleur.update_screen()
 
     # Méthode pour afficher chemin minimal decroise
     def show_decroise(self):
-        self.screen.display = self.result_decroise
-        self.screen.show_screen()
-        self.screen.screen.update()
+        self.controleur.set_display(self.result_decroise)
+        self.controleur.update_screen()
 
     # Méthode permetant de générer le chemin avec Glouton
     def glouton (self, s):
@@ -192,6 +215,33 @@ class Algo:
                 next = i
         return next
 
+    def init_calcul(self):
+        for i in range(100):
+            self.place_point(20)
+            self.make_matrice()
+            self.result_glouton = self.glouton(0)
+            self.result_decroise = self.cheminminimaldecroise()
+            self.result = self.pvcprim(0)
+            self.somme_glouton += self.somme_dist(self.result_glouton)
+            self.somme_decroise += self.somme_dist(self.result_decroise)
+            self.somme_prim += self.somme_dist(self.result)
+            self.show_non_tri()
+
+        self.somme_decroise = self.somme_decroise / 100
+        self.somme_glouton = self.somme_glouton / 100
+        self.somme_prim = self.somme_prim / 100
+
+    def non_tri(self):
+        result = []
+        for i in range(len(self.grid)):
+            for j in range(len(self.grid)):
+                if( j > i):
+                    result.append(i)
+                    result.append(j)
+
+        return result
+
+
 
 """_____________________________________OUTIL______________________________________"""
 
@@ -229,25 +279,8 @@ def intersection(i, j, grid, result):
 
 """______________________________________MAIN_______________________________________"""
 
-
-algo = Algo()
-for i in range(100):
-    algo.place_point(20)
-    algo.make_matrice()
-    algo.result_glouton = algo.glouton(0)
-    algo.result_decroise = algo.cheminminimaldecroise()
-    algo.result = algo.pvcprim(0)
-    algo.somme_glouton += algo.somme_dist(algo.result_glouton)
-    algo.somme_decroise += algo.somme_dist(algo.result_decroise)
-    algo.somme_prim += algo.somme_dist(algo.result)
-    algo.screen.show_screen()
-
-algo.somme_decroise = algo.somme_decroise / 100
-algo.somme_glouton = algo.somme_glouton / 100
-algo.somme_prim = algo.somme_prim / 100
-algo.show_glouton()
-algo.screen.screen.mainloop()
-
+ctrl = Controleur()
+ctrl.run()
 
 
 
