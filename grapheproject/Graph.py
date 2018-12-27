@@ -4,19 +4,25 @@ from numpy.random import random
 from math import *
 import tkinter as tk
 
+"""Classe qui fait le lien entre la vue et la simulation"""
+
 
 class Controleur:
+    #COnstructeur
     def __init__(self):
         self.algo = Algo(self)
         self.screen = Screen(self.algo)
 
+    # update la frame
     def update_screen(self):
         self.screen.show_screen()
         self.screen.screen.update()
 
+    # set le parcours affiché
     def set_display(self, display):
         self.screen.display = display
 
+    # lance la simulation
     def run(self):
         self.algo.init_calcul()
         self.update_screen()
@@ -24,7 +30,11 @@ class Controleur:
         self.screen.screen.mainloop()
 
 
+"""Classe qui gère l'affichage"""
+
+
 class Screen:
+    # COnstructeur
     def __init__(self, algo):
         self.algo = algo
         self.screen = tk.Tk()
@@ -32,6 +42,7 @@ class Screen:
         self.frame = tk.Frame(self.screen)
         self.show_screen()
 
+    # gere l'affichage du contenu de l'ecran
     def show_screen(self):
         self.frame.forget()
         self.frame = tk.Frame(self.screen)
@@ -68,7 +79,7 @@ class Screen:
         self.frame.update()
 
 
-
+"""Classe qui gère la simulation"""
 class Algo:
     # Constructeur de la classe
     def __init__(self, controleur):
@@ -215,6 +226,7 @@ class Algo:
                 next = i
         return next
 
+    # lance une simulation sur 100 calculs
     def init_calcul(self):
         for i in range(100):
             self.place_point(20)
@@ -231,6 +243,7 @@ class Algo:
         self.somme_glouton = self.somme_glouton / 100
         self.somme_prim = self.somme_prim / 100
 
+    # tableau contenant tout les liens entre tout les points
     def non_tri(self):
         result = []
         for i in range(len(self.grid)):
