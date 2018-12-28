@@ -1,5 +1,3 @@
-import time
-
 from numpy.random import random
 from math import *
 import tkinter as tk
@@ -47,31 +45,51 @@ class Screen:
         self.frame.forget()
         self.frame = tk.Frame(self.screen)
         canva = tk.Canvas(self.frame, width=1000, height=800, background='white')
-        for i in range(1, len(self.display)):
-            canva.create_line(floor(self.algo.grid[self.display[i - 1]][0] * 800),
-                              floor(self.algo.grid[self.display[i - 1]][1] * 800),
-                              floor(self.algo.grid[self.display[i]][0] * 800),
-                              floor(self.algo.grid[self.display[i]][1] * 800), fill="red")
-        for i in range(len(self.algo.grid)):
-                canva.create_oval(floor(self.algo.grid[i][0] * 800) - 10, floor(self.algo.grid[i][1] * 800) - 10,
-                                  floor(self.algo.grid[i][0] * 800) + 10,
-                                  floor(self.algo.grid[i][1] * 800) + 10, fill="blue")
+        if "graph" in self.display:
+            rect1 = canva.create_rectangle(50, 700, 150, 700 - 6 * floor(self.algo.somme_glouton / 5 * 100), fill="red")
+            rect2 = canva.create_rectangle(200, 700, 300, 700 - 6 * floor(self.algo.somme_decroise / 5 * 100), fill="blue")
+            rect1 = canva.create_rectangle(350, 700, 450, 700 - 6 * floor(self.algo.somme_prim  / 5 * 100), fill="green")
+
+            canva.create_line(0,700,500,700)
+            canva.create_text(700,700, text="0")
+
+            canva.create_line(0,700 - 6 * floor(self.algo.somme_glouton / 5 * 100),
+                                                500, 700 - 6 * floor(self.algo.somme_glouton / 5 * 100))
+            canva.create_text(700,700 - 6 * floor(self.algo.somme_glouton / 5 * 100), text=self.algo.somme_glouton, fill="red")
+            canva.create_text(900,700 - 6 * floor(self.algo.somme_prim / 5 * 100), text=self.algo.somme_prim, fill="green")
+
+            canva.create_line(0, 700 - 6 * floor(self.algo.somme_decroise / 5 * 100),
+                              500, 700 - 6 * floor(self.algo.somme_decroise / 5 * 100))
+            canva.create_text(900,700 - 6 * floor(self.algo.somme_decroise / 5 * 100) - 20, text=self.algo.somme_decroise, fill="blue")
+
+        else:
+            for i in range(1, len(self.display)):
+                canva.create_line(floor(self.algo.grid[self.display[i - 1]][0] * 800),
+                                  floor(self.algo.grid[self.display[i - 1]][1] * 800),
+                                  floor(self.algo.grid[self.display[i]][0] * 800),
+                                  floor(self.algo.grid[self.display[i]][1] * 800), fill="red")
+            for i in range(len(self.algo.grid)):
+                    canva.create_oval(floor(self.algo.grid[i][0] * 800) - 10, floor(self.algo.grid[i][1] * 800) - 10,
+                                      floor(self.algo.grid[i][0] * 800) + 10,
+                                      floor(self.algo.grid[i][1] * 800) + 10, fill="blue")
 
         bouton_glouton = tk.Button(self.frame, text ="Glouton", command=self.algo.show_glouton)
         bouton_prim = tk.Button(self.frame, text ="Prim", command=self.algo.show_prim)
         bouton_decroise = tk.Button(self.frame, text ="Decroise", command=self.algo.show_decroise)
         bouton_non_tri = tk.Button(self.frame, text="Non parcouru", command=self.algo.show_non_tri)
+        bouton_graph = tk.Button(self.frame, text="Graph", command=self.algo.show_graph)
 
         canva_stat = tk.Canvas(self.frame, width=1000, height=50, background='white')
-        canva_stat.create_text(100, 10, text="Moyenne glouton : " + str(self.algo.somme_glouton))
-        canva_stat.create_text(100, 25, text="Moyenne decroise : " + str(self.algo.somme_decroise))
-        canva_stat.create_text(100, 40, text="Moyenne prim : " + str(self.algo.somme_prim))
+        canva_stat.create_text(100, 10, text="Moyenne glouton : " + str(self.algo.somme_glouton), fill="red")
+        canva_stat.create_text(100, 25, text="Moyenne decroise : " + str(self.algo.somme_decroise), fill="blue")
+        canva_stat.create_text(100, 40, text="Moyenne prim : " + str(self.algo.somme_prim), fill="green")
         """canva_stat.create_text(self.somme_glouton)
         canva_stat.create_text(self.somme_glouton)"""
         bouton_decroise.pack(side=tk.LEFT)
         bouton_prim.pack(side=tk.LEFT)
         bouton_glouton.pack(side=tk.LEFT)
         bouton_non_tri.pack(side=tk.LEFT)
+        bouton_graph.pack(side=tk.LEFT)
         canva_stat.pack(side=tk.TOP)
         canva.pack()
 
@@ -137,6 +155,10 @@ class Algo:
     # Méthode pour afficher chemin minimal decroise
     def show_decroise(self):
         self.controleur.set_display(self.result_decroise)
+        self.controleur.update_screen()
+
+    def show_graph(self):
+        self.controleur.set_display(["graph", " "])
         self.controleur.update_screen()
 
     # Méthode permetant de générer le chemin avec Glouton
